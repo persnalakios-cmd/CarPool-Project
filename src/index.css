@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-sage: #5A6B5D;
+  --color-parchment: #F8F7F2;
+  --color-clay: #E8E6DB;
+  --color-sand: #F5F5F0;
+  --color-charcoal: #2D2D2D;
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased bg-parchment text-charcoal;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/50;
+  }
+}

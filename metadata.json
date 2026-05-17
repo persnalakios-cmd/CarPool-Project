@@ -1,0 +1,6 @@
+{
+  "name": "CarPool",
+  "description": "A mobile-first carpooling application for live ride sharing and tracking.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

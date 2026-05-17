@@ -1,0 +1,166 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "createdAt"]
+    },
+    "DriverPost": {
+      "title": "DriverPost",
+      "description": "A ride offer posted by a driver",
+      "type": "object",
+      "properties": {
+        "postId": { "type": "string" },
+        "driverId": { "type": "string" },
+        "startLocation": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "endLocation": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "validUntil": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Active", "Matched", "Completed", "Expired"] },
+        "availableSeats": { "type": "number" },
+        "vehicle": { "type": "string" },
+        "isRoutine": { "type": "boolean" },
+        "subscriptionMonths": { "type": "number" },
+        "goingTime": { "type": "string" },
+        "returnTime": { "type": "string" },
+        "activeDays": { 
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["driverId", "startLocation", "endLocation", "validUntil", "status", "availableSeats", "createdAt"]
+    },
+    "PassengerRequest": {
+      "title": "PassengerRequest",
+      "description": "A ride request posted by a passenger",
+      "type": "object",
+      "properties": {
+        "passengerId": { "type": "string" },
+        "startLocation": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "endLocation": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "validUntil": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Active", "Matched", "Completed", "Expired"] },
+        "isRoutine": { "type": "boolean" },
+        "subscriptionMonths": { "type": "number" },
+        "goingTime": { "type": "string" },
+        "returnTime": { "type": "string" },
+        "activeDays": { 
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["passengerId", "startLocation", "endLocation", "validUntil", "status", "createdAt"]
+    },
+    "LiveTrackingSession": {
+      "title": "LiveTrackingSession",
+      "description": "A live tracking session between a driver and passenger",
+      "type": "object",
+      "properties": {
+        "sessionId": { "type": "string" },
+        "driverId": { "type": "string" },
+        "passengerId": { "type": "string" },
+        "participantIds": { 
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "postId": { "type": "string" },
+        "requestId": { "type": "string" },
+        "currentDriverLocation": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "status": { "type": "string", "enum": ["EnRoute", "Arrived", "Completed"] },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["sessionId", "driverId", "passengerId", "status", "updatedAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A chat message within a session",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "senderId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["text", "senderId", "createdAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A review for a driver or passenger",
+      "type": "object",
+      "properties": {
+        "reviewId": { "type": "string" },
+        "reviewerId": { "type": "string" },
+        "targetUserId": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reviewId", "reviewerId", "targetUserId", "rating", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "Collection of user profiles"
+    },
+    "driverPosts": {
+      "schema": "DriverPost",
+      "description": "Collection of ride offers"
+    },
+    "passengerRequests": {
+      "schema": "PassengerRequest",
+      "description": "Collection of ride requests"
+    },
+    "trackingSessions": {
+      "schema": "LiveTrackingSession",
+      "description": "Collection of active tracking sessions"
+    },
+    "reviews": {
+      "schema": "Review",
+      "description": "User reviews"
+    }
+  }
+}

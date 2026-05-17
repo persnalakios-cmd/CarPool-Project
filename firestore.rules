@@ -1,0 +1,160 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Users ---
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId);
+      allow list: if isSignedIn(); 
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidId(userId) 
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'whatsapp'])
+        && (incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100)
+        && (!incoming().keys().contains('phone') || (incoming().phone is string && incoming().phone.size() <= 30))
+        && (!incoming().keys().contains('whatsapp') || (incoming().whatsapp is string && incoming().whatsapp.size() <= 30));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'name', 'email', 'createdAt'])
+        && data.uid == request.auth.uid
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.email is string && data.email.size() > 0 && data.email.size() <= 200
+        && data.createdAt is timestamp
+        && (!data.keys().contains('phone') || (data.phone is string && data.phone.size() <= 30))
+        && (!data.keys().contains('whatsapp') || (data.whatsapp is string && data.whatsapp.size() <= 30));
+    }
+
+    // --- DriverPosts ---
+    match /driverPosts/{postId} {
+      allow list: if isSignedIn();
+      allow get: if isSignedIn() && isValidId(postId);
+      allow create: if isSignedIn() && isValidDriverPost(incoming()) && isOwner(incoming().driverId);
+      allow update: if isSignedIn() && isValidId(postId) && (
+        // Owner can update
+        (isOwner(existing().driverId) && isValidDriverPost(incoming())
+          && (incoming().diff(existing()).affectedKeys().hasAny(['status', 'availableSeats', 'validUntil', 'updatedAt']))
+        ) ||
+        // Passenger can update status to 'Matched'
+        (incoming().status == 'Matched' && existing().status == 'Active'
+          && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+      );
+    }
+
+    function isValidDriverPost(data) {
+      return data.keys().hasAll(['driverId', 'startLocation', 'endLocation', 'validUntil', 'status', 'availableSeats', 'createdAt', 'updatedAt'])
+        && data.driverId is string
+        && data.status in ['Active', 'Matched', 'Completed', 'Expired']
+        && data.availableSeats is int && data.availableSeats >= 0
+        && data.startLocation.lat is number && data.startLocation.lng is number
+        && data.endLocation.lat is number && data.endLocation.lng is number
+        && (!data.keys().contains('isRoutine') || data.isRoutine is bool)
+        && (!data.keys().contains('subscriptionMonths') || data.subscriptionMonths is int)
+        && (!data.keys().contains('goingTime') || data.goingTime is string)
+        && (!data.keys().contains('returnTime') || data.returnTime is string)
+        && (!data.keys().contains('activeDays') || data.activeDays is list)
+        && (!data.keys().contains('vehicle') || (data.vehicle is string && data.vehicle.size() <= 50))
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    // --- PassengerRequests ---
+    match /passengerRequests/{requestId} {
+      allow list: if isSignedIn();
+      allow get: if isSignedIn() && isValidId(requestId);
+      allow create: if isSignedIn() && isValidPassengerRequest(incoming()) && isOwner(incoming().passengerId);
+      allow update: if isSignedIn() && isValidId(requestId) && (
+        (isOwner(existing().passengerId) && isValidPassengerRequest(incoming())
+          && (incoming().diff(existing()).affectedKeys().hasAny(['status', 'endLocation', 'startLocation', 'validUntil', 'updatedAt']))
+        ) ||
+        (incoming().status == 'Matched' && existing().status == 'Active'
+          && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+      );
+    }
+
+    function isValidPassengerRequest(data) {
+      return data.keys().hasAll(['passengerId', 'startLocation', 'endLocation', 'validUntil', 'status', 'createdAt', 'updatedAt'])
+        && data.passengerId is string
+        && data.status in ['Active', 'Matched', 'Completed', 'Expired']
+        && data.startLocation.lat is number && data.startLocation.lng is number
+        && data.endLocation.lat is number && data.endLocation.lng is number
+        && (!data.keys().contains('isRoutine') || data.isRoutine is bool)
+        && (!data.keys().contains('subscriptionMonths') || data.subscriptionMonths is int)
+        && (!data.keys().contains('goingTime') || data.goingTime is string)
+        && (!data.keys().contains('returnTime') || data.returnTime is string)
+        && (!data.keys().contains('activeDays') || data.activeDays is list)
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    // --- TrackingSessions ---
+    match /trackingSessions/{sessionId} {
+      allow get: if isSignedIn() && isValidId(sessionId) && (isOwner(existing().driverId) || isOwner(existing().passengerId));
+      allow list: if isSignedIn() && request.auth.uid in resource.data.participantIds;
+      allow create: if isSignedIn() && isValidTrackingSession(incoming())
+        && (isOwner(incoming().driverId) || isOwner(incoming().passengerId));
+      allow update: if isSignedIn() && isValidId(sessionId) && isValidTrackingSession(incoming()) 
+        && (isOwner(existing().driverId) || isOwner(existing().passengerId))
+        && (incoming().diff(existing()).affectedKeys().hasAny(['currentDriverLocation', 'currentPassengerLocation', 'status', 'updatedAt']));
+
+      // Subcollection for Chat
+      match /messages/{messageId} {
+        allow list: if isSignedIn() && (isOwner(get(/databases/$(database)/documents/trackingSessions/$(sessionId)).data.driverId) 
+          || isOwner(get(/databases/$(database)/documents/trackingSessions/$(sessionId)).data.passengerId));
+        allow get: if isSignedIn() && isValidId(messageId) && (isOwner(get(/databases/$(database)/documents/trackingSessions/$(sessionId)).data.driverId) 
+          || isOwner(get(/databases/$(database)/documents/trackingSessions/$(sessionId)).data.passengerId));
+        allow create: if isSignedIn() && isOwner(incoming().senderId) && isValidMessage(incoming())
+          && (isOwner(get(/databases/$(database)/documents/trackingSessions/$(sessionId)).data.driverId) 
+          || isOwner(get(/databases/$(database)/documents/trackingSessions/$(sessionId)).data.passengerId));
+      }
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['text', 'senderId', 'createdAt'])
+        && data.text is string && data.text.size() > 0 && data.text.size() <= 1000
+        && (!data.keys().contains('senderName') || (data.senderName is string && data.senderName.size() <= 100))
+        && data.createdAt is timestamp;
+    }
+
+    function isValidTrackingSession(data) {
+      return data.keys().hasAll(['sessionId', 'driverId', 'passengerId', 'participantIds', 'status', 'updatedAt'])
+        && data.participantIds is list && data.participantIds.size() == 2
+        && data.status in ['EnRoute', 'Arrived', 'Completed']
+        && (!data.keys().contains('isRoutine') || data.isRoutine is bool)
+        && (!data.keys().contains('goingTime') || data.goingTime is string)
+        && (!data.keys().contains('returnTime') || data.returnTime is string)
+        && (!data.keys().contains('activeDays') || data.activeDays is list)
+        && (!data.keys().contains('subscriptionMonths') || data.subscriptionMonths is int)
+        && data.updatedAt is timestamp;
+    }
+
+    // --- Reviews ---
+    match /reviews/{reviewId} {
+      allow list: if isSignedIn();
+      allow get: if isSignedIn() && isValidId(reviewId);
+      allow create: if isSignedIn() && isOwner(incoming().reviewerId);
+    }
+  }
+}
