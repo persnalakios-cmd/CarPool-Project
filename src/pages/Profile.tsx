@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { LogOut, User as UserIcon, Settings, Shield, Bell, CreditCard, ChevronRight, Edit3, Check, X, Phone, MessageCircle } from "lucide-react";
+import { LogOut, User as UserIcon, Settings, Shield, Bell, CreditCard, ChevronRight, Edit3, Check, X, Phone, MessageCircle, Zap } from "lucide-react";
 import { User, updateProfile } from "firebase/auth";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -164,6 +164,28 @@ export default function Profile({ user, onLogout }: { user: User, onLogout: () =
 
       <div className="p-8 space-y-4">
         <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] px-2 mb-2">Ecosystem</h3>
+        
+        <motion.a 
+          href="https://www.effectivecpmnetwork.com/mq1sjd0k?key=53db635ff422da0f3a81bf28bd114ffb"
+          target="_blank"
+          rel="noreferrer"
+          whileTap={{ scale: 0.98 }}
+          className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-sand to-white border border-sand rounded-[32px] group hover:border-[#4CAF50]/30 transition-all shadow-sm mb-4"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-2xl bg-[#4CAF50]/10 flex items-center justify-center text-[#4CAF50]">
+              <Zap size={20} />
+            </div>
+            <div className="text-left">
+              <span className="block font-bold text-charcoal text-sm tracking-tight">Support RouteMate</span>
+              <span className="block text-[10px] text-gray-400 font-medium tracking-tight">View a quick sponsor link to keep us free</span>
+            </div>
+          </div>
+          <div className="text-sand group-hover:text-[#4CAF50]/30">
+            <ChevronRight size={18} />
+          </div>
+        </motion.a>
+
         <ProfileItem icon={<Bell size={20} />} label="Preferences" />
         <ProfileItem icon={<Shield size={20} />} label="Privacy Vault" />
         

@@ -1,6 +1,10 @@
 {
-  "name": "CarPool",
-  "description": "A mobile-first carpooling application for live ride sharing and tracking.",
-  "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "RouteMate",
+  "description": "A premium carpooling app for daily commuters. Un logon ke liye jo daily ek hi raste se aate jate hain.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

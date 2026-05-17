@@ -340,22 +340,51 @@ export default function Home({ user, onRequestRide }: { user: User, onRequestRid
           </div>
         ) : (
           <div className="p-6 space-y-4">
-             {activeItems.length === 0 ? (
-                <div className="text-center py-20 bg-parchment/30 rounded-[40px] border-2 border-dashed border-clay">
-                  <Zap size={32} className="text-clay mx-auto mb-4 animate-pulse" />
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">Scoping {viewType}...</p>
-                </div>
-             ) : (
-                activeItems.map((item) => (
-                   <RideCard 
+            {activeItems.length === 0 ? (
+              <div className="text-center py-20 bg-parchment/30 rounded-[40px] border-2 border-dashed border-clay">
+                <Zap size={32} className="text-clay mx-auto mb-4 animate-pulse" />
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">Scoping {viewType}...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Fuel Saver Reward Card (Adsterra Placement) */}
+                <motion.a
+                  href="https://www.effectivecpmnetwork.com/mq1sjd0k?key=53db635ff422da0f3a81bf28bd114ffb"
+                  target="_blank"
+                  rel="noreferrer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="block bg-gradient-to-br from-sage to-[#4CAF50] p-6 rounded-[32px] text-white shadow-xl shadow-sage/20 border border-white/20 relative overflow-hidden"
+                >
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap size={16} className="text-sand animate-pulse" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-sand">Exclusive Reward</span>
+                    </div>
+                    <h3 className="text-lg font-bold leading-tight mb-1">Fuel Saver Tips & Bonus Offers</h3>
+                    <p className="text-[11px] font-medium opacity-90 leading-relaxed max-w-[200px]">
+                      Save up to 30% on fuel with today's regional partner rewards.
+                    </p>
+                    <div className="mt-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-2 rounded-xl w-fit border border-white/10">
+                      Check Rewards <ArrowRight size={12} />
+                    </div>
+                  </div>
+                  {/* Abstract shapes for premium feel */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16" />
+                  <div className="absolute bottom-0 right-0 w-16 h-16 bg-sand/10 rounded-full mr-4 mb-4" />
+                </motion.a>
+
+                {activeItems.map((item) => (
+                  <RideCard 
                     key={item.postId} 
                     ride={item} 
                     type={viewType}
                     onClick={() => setSelectedRide(item)} 
                     onHover={(ride) => setMapHoveredRide(ride)}
                   />
-                ))
-             )}
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

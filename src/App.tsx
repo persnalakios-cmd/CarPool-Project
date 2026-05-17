@@ -16,6 +16,7 @@ import Home from "./pages/Home";
 import Post from "./pages/Post";
 import Activity from "./pages/Activity";
 import Profile from "./pages/Profile";
+import IntroScreen from "./components/IntroScreen";
 
 type Tab = "home" | "post" | "activity" | "profile";
 
@@ -29,6 +30,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("home");
+  const [showIntro, setShowIntro] = useState(true);
   const [prefillRideData, setPrefillRideData] = useState<any | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -113,6 +115,16 @@ export default function App() {
 
     return unsubscribe;
   }, [user]);
+
+  if (showIntro) {
+    return (
+      <IntroScreen 
+        isAuthenticated={!!user} 
+        onFinish={() => setShowIntro(false)} 
+        onLogin={signInWithGoogle} 
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -219,7 +231,7 @@ export default function App() {
                 {user.displayName?.charAt(0) || "U"}
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">CarPool</p>
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">RouteMate</p>
                 <h1 className="text-base font-bold leading-tight text-charcoal">{user.displayName?.split(' ')[0]}</h1>
               </div>
             </div>
